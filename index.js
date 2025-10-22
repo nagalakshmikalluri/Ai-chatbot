@@ -1,3 +1,4 @@
+// ----- Social Media Share -----
 const socialIconButtons = document.getElementsByClassName("social-icon");
 
 function postToSocialMedia(classList) {
@@ -20,9 +21,9 @@ const addEventListenersToSocialIconButton = () => {
         );
     }
 };
-
 addEventListenersToSocialIconButton();
 
+// ----- Skills Tooltip -----
 const skillIcon = document.getElementsByClassName("tooltip1");
 
 const addEventListenersToSkillIcon = () => {
@@ -33,18 +34,19 @@ const addEventListenersToSkillIcon = () => {
         });
     }
 };
-
 addEventListenersToSkillIcon();
 
-const descriptionDiv = document.getElementsByClassName("about-section");
-
+// ----- About Section Button -----
 document.addEventListener('DOMContentLoaded', function() {
     var openPageButton = document.getElementById('openPageButton');
-    openPageButton.addEventListener('click', function() {
-        window.location.href = 'another-page.html';
-    });
+    if (openPageButton) {
+        openPageButton.addEventListener('click', function() {
+            window.location.href = 'another-page.html';
+        });
+    }
 });
 
+// ----- Section Visibility -----
 let sections = document.querySelectorAll('[id^="main"]');
 
 if (sections.length > 1) {
@@ -56,8 +58,6 @@ if (sections.length > 1) {
     });
 }
 
-
-
 const makeRemainingScreensInvisible = (main) => {
     let sections = document.querySelectorAll('[id^="main"]');
     sections.forEach((section) => {
@@ -66,9 +66,62 @@ const makeRemainingScreensInvisible = (main) => {
         }
     });
 };
+
 const display = (main) => {
     makeRemainingScreensInvisible(main);
     let section = document.getElementById(main);
     $(section).css('cssText', '');
     window.scrollTo(0, 0);
 };
+
+// ----- Chatbot Integration -----
+async function sendMessageToServer(message) {
+    try {
+        const res = await fetch("http://127.0.0.1:5000/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message })
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({ error: 'network' }));
+            throw new Error(err.error || res.statusText);
+        }
+
+        const data = await res.json();
+        return data.reply;
+
+    } catch (error) {
+        console.error("Error:", error.message);
+        return "Sorry, something went wrong!";
+    }
+}
+
+// Example: Add event listener to your chat send button
+const chatSendButton = document.getElementById("chatSendButton");
+const chatInput = document.getElementById("chatInput");
+const chatWindow = document.getElementById("chatWindow");
+
+if (chatSendButton && chatInput && chatWindow) {
+    chatSendButton.addEventListener("click", async () => {
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        // Display user message
+        const userMsg = document.createElement("div");
+        userMsg.className = "user-message";
+        userMsg.textContent = message;
+        chatWindow.appendChild(userMsg);
+
+        chatInput.value = "";
+
+        // Get bot reply
+        const reply = await sendMessageToServer(message);
+        const botMsg = document.createElement("div");
+        botMsg.className = "bot-message";
+        botMsg.textContent = reply;
+        chatWindow.appendChild(botMsg);
+
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    });
+}
